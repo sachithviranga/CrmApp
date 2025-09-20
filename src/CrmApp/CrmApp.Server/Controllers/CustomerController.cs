@@ -14,7 +14,7 @@ namespace CrmApp.Server.Controllers
     /// </remarks>
     /// <param name="customerService">Service for customer business operations</param>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class CustomerController(ICustomerService customerService) : ControllerBase
     {
         private readonly ICustomerService _customerService = customerService;
