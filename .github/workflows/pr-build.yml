@@ -1,0 +1,28 @@
+name: Build 
+on:
+  pull_request:
+    branches: [development, master]   
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'  
+
+      - name: Restore dependencies Client
+        run: dotnet restore src/CrmApp/CrmApp.Client/CrmApp.Client.csproj
+
+      - name: Restore dependencies Server
+        run: dotnet restore src/CrmApp/CrmApp.Server/CrmApp.Server.csproj
+
+      - name: Build Client project
+        run: dotnet build src/CrmApp/CrmApp.Client/CrmApp.Client.csproj --no-restore --configuration Release
+
+      - name: Build Server project
+        run: dotnet build src/CrmApp/CrmApp.Server/CrmApp.Server.csproj --no-restore --configuration Release
