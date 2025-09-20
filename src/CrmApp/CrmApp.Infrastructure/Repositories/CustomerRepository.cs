@@ -41,41 +41,33 @@ namespace CrmApp.Infrastructure.Repositories
         /// <exception cref="InvalidOperationException">Thrown when customer with same email already exists</exception>
         public async Task<Customer> CreateAsync(Customer customer)
         {
-            try
+            _logger.LogInformation("Creating customer with email: {Email}", customer.Email);
+
+            // Business Rule: Ensure email uniqueness
+            // Check if customer with same email already exists in database
+            var existingCustomer = await _db.Customer
+                .FirstOrDefaultAsync(c => c.Email == customer.Email);
+            
+            if (existingCustomer != null)
             {
-                _logger.LogInformation("Creating customer with email: {Email}", customer.Email);
-
-                // Business Rule: Ensure email uniqueness
-                // Check if customer with same email already exists in database
-                var existingCustomer = await _db.Customer
-                    .FirstOrDefaultAsync(c => c.Email == customer.Email);
-                
-                if (existingCustomer != null)
-                {
-                    throw new InvalidOperationException($"Customer with email {customer.Email} already exists.");
-                }
-
-                // Map domain model to entity for database persistence
-                var customerEntity = _mapper.Map<CustomerEntity>(customer);
-                
-                // Set audit timestamps (these should be set at the database level in production)
-                customerEntity.DateCreated = DateTime.UtcNow;
-                customerEntity.DateUpdated = DateTime.UtcNow;
-
-                // Add entity to context and persist to database
-                await _db.Customer.AddAsync(customerEntity);
-                await _db.SaveChangesAsync();
-
-                _logger.LogInformation("Customer created successfully with ID: {Id}", customerEntity.AccountId);
-
-                // Map entity back to domain model for return
-                return _mapper.Map<Customer>(customerEntity);
+                throw new InvalidOperationException($"Customer with email {customer.Email} already exists.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating customer with email: {Email}", customer.Email);
-                throw;
-            }
+
+            // Map domain model to entity for database persistence
+            var customerEntity = _mapper.Map<CustomerEntity>(customer);
+            
+            // Set audit timestamps (these should be set at the database level in production)
+            customerEntity.DateCreated = DateTime.UtcNow;
+            customerEntity.DateUpdated = DateTime.UtcNow;
+
+            // Add entity to context and persist to database
+            await _db.Customer.AddAsync(customerEntity);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Customer created successfully with ID: {Id}", customerEntity.AccountId);
+
+            // Map entity back to domain model for return
+            return _mapper.Map<Customer>(customerEntity);
         }
 
         /// <summary>
@@ -86,30 +78,22 @@ namespace CrmApp.Infrastructure.Repositories
         /// <returns>True if customer was found and deleted, false if not found</returns>
         public async Task<bool> DeleteAsync(int id)
         {
-            try
+            _logger.LogInformation("Deleting customer with ID: {Id}", id);
+
+            // Find the customer entity by ID
+            var entity = await _db.Customer.FindAsync(id);
+            if (entity == null)
             {
-                _logger.LogInformation("Deleting customer with ID: {Id}", id);
-
-                // Find the customer entity by ID
-                var entity = await _db.Customer.FindAsync(id);
-                if (entity == null)
-                {
-                    _logger.LogWarning("Customer with ID {Id} not found for deletion", id);
-                    return false;
-                }
-
-                // Remove entity from context and persist deletion
-                _db.Customer.Remove(entity);
-                await _db.SaveChangesAsync();
-
-                _logger.LogInformation("Customer with ID {Id} deleted successfully", id);
-                return true;
+                _logger.LogWarning("Customer with ID {Id} not found for deletion", id);
+                return false;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting customer with ID: {Id}", id);
-                throw;
-            }
+
+            // Remove entity from context and persist deletion
+            _db.Customer.Remove(entity);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Customer with ID {Id} deleted successfully", id);
+            return true;
         }
 
         /// <summary>
@@ -120,29 +104,21 @@ namespace CrmApp.Infrastructure.Repositories
         /// <returns>Collection of all customers ordered by name</returns>
         public async Task<IEnumerable<Customer>> GetAllAsync()
         {
-            try
-            {
-                _logger.LogInformation("Retrieving all customers");
+            _logger.LogInformation("Retrieving all customers");
 
-                // Use AsNoTracking for read-only operations to improve performance
-                // Order results for consistent data presentation
-                var entities = await _db.Customer
-                    .AsNoTracking()
-                    .OrderBy(c => c.LastName)
-                    .ThenBy(c => c.FirstName)
-                    .ToListAsync();
+            // Use AsNoTracking for read-only operations to improve performance
+            // Order results for consistent data presentation
+            var entities = await _db.Customer
+                .AsNoTracking()
+                .OrderBy(c => c.LastName)
+                .ThenBy(c => c.FirstName)
+                .ToListAsync();
 
-                // Map entities to domain models
-                var customers = _mapper.Map<List<Customer>>(entities);
+            // Map entities to domain models
+            var customers = _mapper.Map<List<Customer>>(entities);
 
-                _logger.LogInformation("Retrieved {Count} customers", customers.Count);
-                return customers;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all customers");
-                throw;
-            }
+            _logger.LogInformation("Retrieved {Count} customers", customers.Count);
+            return customers;
         }
 
         /// <summary>
@@ -153,32 +129,24 @@ namespace CrmApp.Infrastructure.Repositories
         /// <returns>Customer domain model or null if not found</returns>
         public async Task<Customer?> GetByIdAsync(int id)
         {
-            try
+            _logger.LogInformation("Retrieving customer with ID: {Id}", id);
+
+            // Use AsNoTracking for read-only operations to improve performance
+            var entity = await _db.Customer
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.AccountId == id);
+
+            if (entity == null)
             {
-                _logger.LogInformation("Retrieving customer with ID: {Id}", id);
-
-                // Use AsNoTracking for read-only operations to improve performance
-                var entity = await _db.Customer
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(c => c.AccountId == id);
-
-                if (entity == null)
-                {
-                    _logger.LogWarning("Customer with ID {Id} not found", id);
-                    return null;
-                }
-
-                // Map entity to domain model
-                var customer = _mapper.Map<Customer>(entity);
-                _logger.LogInformation("Customer with ID {Id} retrieved successfully", id);
-
-                return customer;
+                _logger.LogWarning("Customer with ID {Id} not found", id);
+                return null;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving customer with ID: {Id}", id);
-                throw;
-            }
+
+            // Map entity to domain model
+            var customer = _mapper.Map<Customer>(entity);
+            _logger.LogInformation("Customer with ID {Id} retrieved successfully", id);
+
+            return customer;
         }
 
         /// <summary>
@@ -191,49 +159,41 @@ namespace CrmApp.Infrastructure.Repositories
         /// <exception cref="InvalidOperationException">Thrown when new email already exists</exception>
         public async Task<Customer?> UpdateAsync(Customer customer)
         {
-            try
+            _logger.LogInformation("Updating customer with ID: {Id}", customer.Id);
+
+            // Find existing entity by ID
+            var entity = await _db.Customer.FindAsync(customer.Id);
+            if (entity == null)
             {
-                _logger.LogInformation("Updating customer with ID: {Id}", customer.Id);
+                _logger.LogWarning("Customer with ID {Id} not found for update", customer.Id);
+                return null;
+            }
 
-                // Find existing entity by ID
-                var entity = await _db.Customer.FindAsync(customer.Id);
-                if (entity == null)
-                {
-                    _logger.LogWarning("Customer with ID {Id} not found for update", customer.Id);
-                    return null;
-                }
-
-                // Business Rule: Validate email uniqueness if email is being changed
-                if (entity.Email != customer.Email)
-                {
-                    var emailExists = await _db.Customer
-                        .AnyAsync(c => c.Email == customer.Email && c.AccountId != customer.Id);
-                    
-                    if (emailExists)
-                    {
-                        throw new InvalidOperationException($"Customer with email {customer.Email} already exists.");
-                    }
-                }
-
-                // Map updated domain model data to existing entity
-                _mapper.Map(customer, entity);
+            // Business Rule: Validate email uniqueness if email is being changed
+            if (entity.Email != customer.Email)
+            {
+                var emailExists = await _db.Customer
+                    .AnyAsync(c => c.Email == customer.Email && c.AccountId != customer.Id);
                 
-                // Update audit timestamp
-                entity.DateUpdated = DateTime.UtcNow;
-
-                // Persist changes to database
-                await _db.SaveChangesAsync();
-
-                _logger.LogInformation("Customer with ID {Id} updated successfully", customer.Id);
-
-                // Map updated entity back to domain model
-                return _mapper.Map<Customer>(entity);
+                if (emailExists)
+                {
+                    throw new InvalidOperationException($"Customer with email {customer.Email} already exists.");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating customer with ID: {Id}", customer.Id);
-                throw;
-            }
+
+            // Map updated domain model data to existing entity
+            _mapper.Map(customer, entity);
+            
+            // Update audit timestamp
+            entity.DateUpdated = DateTime.UtcNow;
+
+            // Persist changes to database
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Customer with ID {Id} updated successfully", customer.Id);
+
+            // Map updated entity back to domain model
+            return _mapper.Map<Customer>(entity);
         }
 
         /// <summary>
@@ -245,29 +205,21 @@ namespace CrmApp.Infrastructure.Repositories
         /// <returns>True if email exists, false otherwise</returns>
         public async Task<bool> ExistsByEmailAsync(string email, int? id)
         {
-            try
-            {
-                _logger.LogInformation("Checking if customer with email exists: {Email}", email);
+            _logger.LogInformation("Checking if customer with email exists: {Email}", email);
 
-                // Build query to check email existence
-                var query = _db.Customer.AsNoTracking().Where(c => c.Email == email);
-                
-                // Exclude specific customer ID if provided (useful for update operations)
-                if (id.HasValue)
-                {
-                    query = query.Where(c => c.AccountId != id.Value);
-                }
-
-                var exists = await query.AnyAsync();
-                
-                _logger.LogInformation("Email {Email} exists: {Exists}", email, exists);
-                return exists;
-            }
-            catch (Exception ex)
+            // Build query to check email existence
+            var query = _db.Customer.AsNoTracking().Where(c => c.Email == email);
+            
+            // Exclude specific customer ID if provided (useful for update operations)
+            if (id.HasValue)
             {
-                _logger.LogError(ex, "Error checking if email exists: {Email}", email);
-                throw;
+                query = query.Where(c => c.AccountId != id.Value);
             }
+
+            var exists = await query.AnyAsync();
+            
+            _logger.LogInformation("Email {Email} exists: {Exists}", email, exists);
+            return exists;
         }
     }
 }

@@ -23,6 +23,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Add exception handling middleware
+app.UseMiddleware<CrmApp.Server.Middleware.ExceptionHandlingMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();

@@ -1,6 +1,7 @@
 ﻿using CrmApp.Application.Interfaces;
 using CrmApp.Application.Mapping;
 using CrmApp.Application.Services;
+using CrmApp.Application.Validators;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,8 @@ namespace CrmApp.Application
             services.AddScoped<ICustomerService, CustomerService>();
 
             #endregion
+
+
 
             return services;
         }

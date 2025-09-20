@@ -30,19 +30,11 @@ namespace CrmApp.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<CustomerDto>> CreateCustomer([FromBody] CreateCustomerRequest request)
         {
-            try
-            {
-                // Delegate to service layer for business logic and validation
-                var createdCustomer = await _customerService.CreateCustomerAsync(request);
-                
-                // Return 201 Created with location header pointing to the new resource
-                return CreatedAtAction(nameof(GetCustomer), new { id = createdCustomer.Id }, createdCustomer);
-            }
-            catch (Exception ex)
-            {
-                // Return 400 Bad Request with error details for client debugging
-                return BadRequest(new { error = ex.Message });
-            }
+            // Delegate to service layer for business logic and validation
+            var createdCustomer = await _customerService.CreateCustomerAsync(request);
+            
+            // Return 201 Created with location header pointing to the new resource
+            return CreatedAtAction(nameof(GetCustomer), new { id = createdCustomer.Id }, createdCustomer);
         }
 
         /// <summary>
@@ -92,21 +84,13 @@ namespace CrmApp.Server.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<CustomerDto>> UpdateCustomer([FromBody] UpdateCustomerRequest request)
         {
-            try
-            {
-                // Delegate to service layer for business logic and validation
-                var updatedCustomer = await _customerService.UpdateCustomerAsync(request);
-                
-                if (updatedCustomer == null)
-                    return NotFound();
+            // Delegate to service layer for business logic and validation
+            var updatedCustomer = await _customerService.UpdateCustomerAsync(request);
+            
+            if (updatedCustomer == null)
+                return NotFound();
 
-                return Ok(updatedCustomer);
-            }
-            catch (Exception ex)
-            {
-                // Return 400 Bad Request with error details for client debugging
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(updatedCustomer);
         }
 
         /// <summary>
@@ -121,22 +105,14 @@ namespace CrmApp.Server.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCustomer(int id)
         {
-            try
-            {
-                // Delegate to service layer for deletion operation
-                var deleted = await _customerService.DeleteCustomerAsync(id);
-                
-                if (!deleted)
-                    return NotFound();
+            // Delegate to service layer for deletion operation
+            var deleted = await _customerService.DeleteCustomerAsync(id);
+            
+            if (!deleted)
+                return NotFound();
 
-                // Return 204 No Content for successful deletion
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                // Return 400 Bad Request with error details for client debugging
-                return BadRequest(new { error = ex.Message });
-            }
+            // Return 204 No Content for successful deletion
+            return NoContent();
         }
     }
 }
