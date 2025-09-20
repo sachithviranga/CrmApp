@@ -1,4 +1,9 @@
+using CrmApp.Server.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
+
+//Register Services
+ServiceCollectionExtensions.RegisterServices(builder.Services , builder.Configuration);
 
 // Add services to the container.
 
@@ -22,4 +27,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
