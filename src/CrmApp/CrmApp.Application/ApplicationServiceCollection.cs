@@ -2,6 +2,7 @@
 using CrmApp.Application.Mapping;
 using CrmApp.Application.Services;
 using CrmApp.Application.Validators;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +24,12 @@ namespace CrmApp.Application
 
             #endregion
 
+            #region Validators
 
+            services.AddValidatorsFromAssemblyContaining<CreateCustomerRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateCustomerRequestValidator>();
+
+            #endregion
 
             return services;
         }

@@ -64,7 +64,7 @@ namespace CrmApp.Infrastructure.Repositories
             await _db.Customer.AddAsync(customerEntity);
             await _db.SaveChangesAsync();
 
-            _logger.LogInformation("Customer created successfully with ID: {Id}", customerEntity.AccountId);
+            _logger.LogInformation("Customer created successfully with ID: {Id}", customerEntity.Id);
 
             // Map entity back to domain model for return
             return _mapper.Map<Customer>(customerEntity);
@@ -134,7 +134,7 @@ namespace CrmApp.Infrastructure.Repositories
             // Use AsNoTracking for read-only operations to improve performance
             var entity = await _db.Customer
                 .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.AccountId == id);
+                .FirstOrDefaultAsync(c => c.Id == id);
 
             if (entity == null)
             {
@@ -173,7 +173,7 @@ namespace CrmApp.Infrastructure.Repositories
             if (entity.Email != customer.Email)
             {
                 var emailExists = await _db.Customer
-                    .AnyAsync(c => c.Email == customer.Email && c.AccountId != customer.Id);
+                    .AnyAsync(c => c.Email == customer.Email && c.Id != customer.Id);
                 
                 if (emailExists)
                 {
@@ -213,7 +213,7 @@ namespace CrmApp.Infrastructure.Repositories
             // Exclude specific customer ID if provided (useful for update operations)
             if (id.HasValue)
             {
-                query = query.Where(c => c.AccountId != id.Value);
+                query = query.Where(c => c.Id != id.Value);
             }
 
             var exists = await query.AnyAsync();

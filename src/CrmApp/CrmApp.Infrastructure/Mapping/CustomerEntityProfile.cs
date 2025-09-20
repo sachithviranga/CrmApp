@@ -14,13 +14,13 @@ namespace CrmApp.Infrastructure.Mapping
         public CustomerEntityProfile() 
         {
             CreateMap<Customer, CustomerEntity>()
-                .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.DateCreated, opt => opt.MapFrom(src => src.DateCreated))
                 .ForMember(dest => dest.DateUpdated, opt => opt.MapFrom(src => src.DateUpdated));
 
             CreateMap<CustomerEntity, Customer>()
                 .ConstructUsing(e => new Customer(e.FirstName, e.LastName, e.Email))
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccountId))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
                 .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))

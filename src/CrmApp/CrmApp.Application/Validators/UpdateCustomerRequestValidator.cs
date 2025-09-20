@@ -1,16 +1,12 @@
-﻿using CrmApp.Application.Interfaces;
-using CrmApp.Shared.DTO;
+﻿using CrmApp.Shared.DTO;
 using FluentValidation;
 
 namespace CrmApp.Application.Validators
 {
     public class UpdateCustomerRequestValidator : AbstractValidator<UpdateCustomerRequest>
     {
-        private readonly ICustomerRepository _repository;
-
-        public UpdateCustomerRequestValidator(ICustomerRepository repository)
+        public UpdateCustomerRequestValidator()
         {
-            _repository = repository;
 
             // ID validation - must be positive and within reasonable range
             RuleFor(x => x.Id)
@@ -46,9 +42,7 @@ namespace CrmApp.Application.Validators
                 .EmailAddress()
                 .WithMessage("Email must be in a valid format")
                 .MaximumLength(100)
-                .WithMessage("Email cannot exceed 100 characters")
-                .MustAsync(BeUniqueEmail)
-                .WithMessage("Email already exists");
+                .WithMessage("Email cannot exceed 100 characters");
 
             // Phone Number validation - optional, but if provided must be valid format
             RuleFor(x => x.PhoneNumber)
@@ -87,10 +81,5 @@ namespace CrmApp.Application.Validators
                 .When(x => !string.IsNullOrEmpty(x.Country));
         }
 
-        private async Task<bool> BeUniqueEmail(UpdateCustomerRequest request, string email, CancellationToken token)
-        {
-            // exclude current customer when updating
-            return !await _repository.ExistsByEmailAsync(email, request.Id);
-        }
     }
 }

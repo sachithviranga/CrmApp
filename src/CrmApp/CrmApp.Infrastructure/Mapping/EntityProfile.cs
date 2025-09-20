@@ -22,7 +22,7 @@ namespace CrmApp.Infrastructure.Mapping
             // Used when persisting domain changes to the database
             CreateMap<Customer, CustomerEntity>()
                 // Map domain ID to entity AccountId (different property names)
-                .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 // Map audit timestamps from domain to entity
                 .ForMember(dest => dest.DateCreated, opt => opt.MapFrom(src => src.DateCreated))
                 .ForMember(dest => dest.DateUpdated, opt => opt.MapFrom(src => src.DateUpdated));
@@ -37,7 +37,7 @@ namespace CrmApp.Infrastructure.Mapping
                 // This ensures domain model validation is applied during creation
                 .ConstructUsing(e => new Customer(e.FirstName, e.LastName, e.Email))
                 // Map entity AccountId to domain ID (different property names)
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccountId))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 // Map optional contact information
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))

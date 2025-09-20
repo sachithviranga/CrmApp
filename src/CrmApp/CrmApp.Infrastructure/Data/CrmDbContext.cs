@@ -12,6 +12,13 @@ namespace CrmApp.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<CustomerEntity>()
+                .HasKey(c => c.Id);
+
+            modelBuilder.Entity<CustomerEntity>()
+                .Property(c => c.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<CustomerEntity>()
                 .HasIndex(c => c.Email)
                 .IsUnique();
 
