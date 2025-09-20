@@ -3,7 +3,7 @@ using CrmApp.Server.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 //Register Services
-ServiceCollectionExtensions.RegisterServices(builder.Services , builder.Configuration);
+ServiceCollectionExtension.RegisterServices(builder.Services , builder.Configuration);
 
 // Add services to the container.
 
