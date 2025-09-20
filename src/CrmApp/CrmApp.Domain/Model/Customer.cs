@@ -13,7 +13,7 @@ namespace CrmApp.Domain.Model
         /// Gets the unique identifier for the customer.
         /// Set by the infrastructure layer during entity mapping.
         /// </summary>
-        public int Id { get; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets the customer's first name.
