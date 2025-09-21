@@ -4,6 +4,7 @@
 @using CrmApp.Shared.DTO
 @inject CustomerApiClient Api
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <h3>Edit Customer</h3>
 
@@ -107,6 +108,10 @@ else
         var err = await Api.UpdateCustomerAsync(customer);
         if (err == null)
         {
+            await JS.InvokeVoidAsync("showAlert", "success", "Success!", "Customer updated successfully.");
+
+            await Task.Delay(2000);
+
             Nav.NavigateTo($"/customers/{id}");
         }
         else
@@ -121,7 +126,7 @@ else
         var filtered = new string(input.Where(char.IsDigit).ToArray());
         if (customer != null && filtered != customer?.PhoneNumber)
         {
-            customer.PhoneNumber = filtered;
+            customer!.PhoneNumber = filtered;
         }
     }
 

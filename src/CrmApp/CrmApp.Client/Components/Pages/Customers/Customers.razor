@@ -4,7 +4,7 @@
 @using CrmApp.Shared.DTO
 @inject CustomerApiClient Api
 @inject NavigationManager Nav
-@inject ToastService ToastService
+@inject IJSRuntime JS
 
 <h3>Customers</h3>
 
@@ -70,54 +70,15 @@ else
     </nav>
 }
 
-@if (showConfirm && customerToDelete is not null)
-{
-    <div class="modal-backdrop fade show"></div>
-    <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">Confirm Delete</h5>
-                    <button type="button" class="btn-close" @onclick="CancelDelete" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete customer:
-                    <strong>@customerToDelete.FirstName @customerToDelete.LastName</strong>?
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
-                    <button class="btn btn-danger" @onclick="DeleteCustomer" disabled="@isDeleting">
-                        @if (isDeleting)
-                        {
-                            <span>
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                Deleting...
-                            </span>
-                        }
-                        else
-                        {
-                            <span>Delete</span>
-                        }
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
 @code {
     private List<CustomerDto> customers = new();
     private int currentPage = 1;
-    private int pageSize = 10;
+    private readonly int pageSize = 10;
     private int totalCustomers = 0;
 
     private int TotalPages => (int)Math.Ceiling((double)totalCustomers / pageSize);
 
-
-    private CustomerDto? customerToDelete;
-    private bool showConfirm = false;
     private bool isLoading = true;
-    private bool isDeleting = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,12 +87,14 @@ else
 
     private async Task LoadCustomers()
     {
+
         isLoading = true;
         try
         {
             var result = await Api.GetCustomersPagedAsync(currentPage, pageSize);
             customers = result.Items;
             totalCustomers = result.TotalCount;
+
         }
         finally
         {
@@ -152,38 +115,36 @@ else
 
     private void ViewCustomer(int id) => Nav.NavigateTo($"/customers/{id}");
 
-    private void ConfirmDelete(CustomerDto customer)
+
+    private async Task ConfirmDelete(CustomerDto customer)
     {
-        customerToDelete = customer;
-        showConfirm = true;
+        bool confirmed = await JS.InvokeAsync<bool>("showConfirm", "Are you sure?", "This will delete the item.");
+        if (confirmed)
+        {
+            await DeleteCustomer(customer);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("showAlert", "info", "Cancelled", "Nothing was deleted.");
+        }
     }
 
-    private void CancelDelete()
-    {
-        customerToDelete = null;
-        showConfirm = false;
-        isDeleting = false;
-    }
 
-    private async Task DeleteCustomer()
+    private async Task DeleteCustomer(CustomerDto customerToDelete)
     {
         if (customerToDelete is not null)
         {
-            isDeleting = true;
             var response = await Api.DeleteCustomerAsync(customerToDelete.Id);
             if (response == null)
             {
-                ToastService.ShowSuccess("Customer deleted successfully.");
+                await JS.InvokeVoidAsync("showAlert", "success", "Success!", "Customer deleted successfully.");
+
                 await LoadCustomers();
             }
             else
             {
-               ToastService.ShowError("Delete failed.");
+                await JS.InvokeVoidAsync("showAlert", "error", "Something went wrong!", "Delete failed.");
             }
-            isDeleting = false;
         }
-
-        showConfirm = false;
-        customerToDelete = null;
     }
 }

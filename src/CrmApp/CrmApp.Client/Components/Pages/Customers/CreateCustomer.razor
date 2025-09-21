@@ -4,7 +4,7 @@
 @using CrmApp.Client.Services
 @inject CustomerApiClient Api
 @inject NavigationManager Nav
-@inject ToastService ToastService
+@inject IJSRuntime JS
 
 <h3>Create Customer</h3>
 
@@ -79,7 +79,10 @@
         var resp = await Api.CreateCustomerAsync(newCustomer);
         if (resp == null)
         {
-            ToastService.ShowSuccess("Customer added successfully.");
+            await JS.InvokeVoidAsync("showAlert", "success", "Success!", "Customer added successfully.");
+            
+            await Task.Delay(2000);
+
             Nav.NavigateTo("/customers");
         }
         else
