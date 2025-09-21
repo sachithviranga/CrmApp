@@ -1,4 +1,46 @@
+using CrmApp.Server.Extensions;
+using Microsoft.AspNetCore.ResponseCompression;
+
 var builder = WebApplication.CreateBuilder(args);
+
+//Register Services
+ServiceCollectionExtension.RegisterServices(builder.Services, builder.Configuration);
+
+#region ResponseCompression
+
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+
+    options.Providers.Add<GzipCompressionProvider>();
+
+    options.Providers.Add<BrotliCompressionProvider>();
+
+    options.MimeTypes =
+            [
+        // Default
+        "text/plain",
+                    "text/css",
+                    "application/javascript",
+                    "text/html",
+                    "application/xml",
+                    "text/xml",
+                    "application/json",
+                    "text/json",
+                    // Custom
+                    "image/svg+xml",
+                     "application/atom+xml"
+    ];
+
+    builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = System.IO.Compression.CompressionLevel.Optimal);
+});
+
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+});
+
+#endregion
 
 // Add services to the container.
 
@@ -18,8 +60,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Add exception handling middleware
+app.UseMiddleware<CrmApp.Server.Middleware.ExceptionHandlingMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.36105.23 d17.13
+VisualStudioVersion = 17.13.36105.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrmApp.Client", "CrmApp.Client\CrmApp.Client.csproj", "{10479ABC-DB30-42D8-9002-8080A8ED42F1}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrmApp.Application", "CrmApp.Application\CrmApp.Application.csproj", "{D4675E50-098A-4897-8E89-CE4516BAE481}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrmApp.Infrastructure", "CrmApp.Infrastructure\CrmApp.Infrastructure.csproj", "{0EB4B08E-E1D9-442E-8163-824CA98D9078}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrmApp.Shared", "CrmApp.Shared\CrmApp.Shared.csproj", "{053974C5-24BA-4CD1-8539-9BB768A4E3DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{0EB4B08E-E1D9-442E-8163-824CA98D9078}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EB4B08E-E1D9-442E-8163-824CA98D9078}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EB4B08E-E1D9-442E-8163-824CA98D9078}.Release|Any CPU.Build.0 = Release|Any CPU
+		{053974C5-24BA-4CD1-8539-9BB768A4E3DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{053974C5-24BA-4CD1-8539-9BB768A4E3DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{053974C5-24BA-4CD1-8539-9BB768A4E3DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{053974C5-24BA-4CD1-8539-9BB768A4E3DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
