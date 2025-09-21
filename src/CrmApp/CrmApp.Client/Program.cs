@@ -16,7 +16,7 @@ builder.Services.AddHttpClient<CustomerApiClient>(client =>
 });
 
 
-builder.Services.AddScoped<ToastService>();
+builder.Services.AddSingleton<ToastService>();
 
 var app = builder.Build();
 

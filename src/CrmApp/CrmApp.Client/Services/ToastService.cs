@@ -1,38 +1,28 @@
-﻿using System;
-using System.Timers;
-
-namespace CrmApp.Client.Services
+﻿namespace CrmApp.Client.Services
 {
     public class ToastService
     {
-        public event Action<string, ToastLevel>? OnShow;
-        public event Action? OnHide;
+        public event Func<string, ToastLevel, Task>? OnShow;
+        public event Func<Task>? OnHide;
 
-        private System.Timers.Timer? _timer;
-
-        public void ShowToast(string message, ToastLevel level = ToastLevel.Info, int duration = 3000)
+        public async Task ShowToastAsync(string message, ToastLevel level = ToastLevel.Info, int duration = 3000)
         {
-            OnShow?.Invoke(message, level);
-
-            _timer?.Stop();
-            _timer = new System.Timers.Timer(duration);
-            _timer.Elapsed += (_, _) =>
+            if (OnShow != null)
             {
-                HideToast();
-                _timer?.Dispose();
-                _timer = null;
-            };
-            _timer.Start();
+                await OnShow.Invoke(message, level);
+
+                await Task.Delay(duration);
+
+                if (OnHide != null)
+                {
+                    await OnHide.Invoke();
+                }
+            }
         }
 
-        public void ShowSuccess(string message) => ShowToast(message, ToastLevel.Success);
-        public void ShowError(string message) => ShowToast(message, ToastLevel.Error);
-        public void ShowInfo(string message) => ShowToast(message, ToastLevel.Info);
-
-        public void HideToast()
-        {
-            OnHide?.Invoke();
-        }
+        public Task ShowSuccess(string message, int duration = 3000) => ShowToastAsync(message, ToastLevel.Success, duration);
+        public Task ShowError(string message, int duration = 3000) => ShowToastAsync(message, ToastLevel.Error, duration);
+        public Task ShowInfo(string message, int duration = 3000) => ShowToastAsync(message, ToastLevel.Info, duration);
     }
 
     public enum ToastLevel
