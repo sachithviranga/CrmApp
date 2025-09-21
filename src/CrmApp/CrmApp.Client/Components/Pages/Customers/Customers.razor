@@ -48,6 +48,28 @@ else
     </table>
 }
 
+@if (TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)">Previous</button>
+            </li>
+
+            @for (int i = 1; i <= TotalPages; i++)
+            {
+                <li class="page-item @(currentPage == i ? "active" : "")">
+                    <button class="page-link" @onclick="() => ChangePage(i)">@i</button>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == TotalPages ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)">Next</button>
+            </li>
+        </ul>
+    </nav>
+}
+
 @if (showConfirm && customerToDelete is not null)
 {
     <div class="modal-backdrop fade show"></div>
@@ -84,7 +106,14 @@ else
 }
 
 @code {
-    private List<CustomerDto>? customers;
+    private List<CustomerDto> customers = new();
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalCustomers = 0;
+
+    private int TotalPages => (int)Math.Ceiling((double)totalCustomers / pageSize);
+
+
     private CustomerDto? customerToDelete;
     private bool showConfirm = false;
     private bool isLoading = true;
@@ -100,11 +129,22 @@ else
         isLoading = true;
         try
         {
-            customers = await Api.GetCustomersAsync();
+            var result = await Api.GetCustomersPagedAsync(currentPage, pageSize);
+            customers = result.Items;
+            totalCustomers = result.TotalCount;
         }
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task ChangePage(int newPage)
+    {
+        if (newPage >= 1 && newPage <= TotalPages)
+        {
+            currentPage = newPage;
+            await LoadCustomers();
         }
     }
 

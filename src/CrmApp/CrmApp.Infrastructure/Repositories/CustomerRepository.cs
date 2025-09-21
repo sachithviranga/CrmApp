@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using CrmApp.Application.Interfaces;
 using CrmApp.Domain.Model;
 using CrmApp.Infrastructure.Data;
 using CrmApp.Infrastructure.Entities;
+using CrmApp.Shared.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -220,6 +222,40 @@ namespace CrmApp.Infrastructure.Repositories
             
             _logger.LogInformation("Email {Email} exists: {Exists}", email, exists);
             return exists;
+        }
+
+        /// <summary>
+        /// Retrieves a paged list of customers from the database.
+        /// Uses AsNoTracking for read-only performance optimization.
+        /// Results are ordered by customer ID for consistent paging.
+        /// </summary>
+        /// <param name="page">Page number (1-based)</param>
+        /// <param name="pageSize">Number of customers per page</param>
+        /// <returns>Paged result containing customers and pagination info</returns>
+        public async Task<PagedResult<Customer>> GetPagedAsync(int page, int pageSize)
+        {
+            // Prepare query for customers with no tracking for performance
+            var query = _db.Customer.AsNoTracking();
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Retrieve paged items ordered by ID
+            var items = await query
+                .OrderBy(c => c.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ProjectTo<Customer>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            // Return paged result
+            return new PagedResult<Customer>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
     }
 }

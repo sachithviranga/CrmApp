@@ -114,5 +114,22 @@ namespace CrmApp.Server.Controllers
             // Return 204 No Content for successful deletion
             return NoContent();
         }
+
+        /// <summary>
+        /// Retrieves a paged list of customers.
+        /// Supports pagination via query parameters.
+        /// </summary>
+        /// <param name="page">Page number (starting from 1)</param>
+        /// <param name="pageSize">Number of items per page</param>
+        /// <returns>Paged result containing customer DTOs</returns>
+        /// <response code="200">Paged customers retrieved successfully</response>
+        [HttpGet("paged")]
+        public async Task<ActionResult<PagedResult<CustomerDto>>> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            // Delegate to service layer for paged data retrieval
+            var result = await _customerService.GetPagedAsync(page, pageSize);
+            // Return 200 OK with paged result
+            return Ok(result);
+        }
     }
 }

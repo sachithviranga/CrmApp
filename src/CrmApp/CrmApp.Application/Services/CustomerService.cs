@@ -186,5 +186,24 @@ namespace CrmApp.Application.Services
             return deleted;
         }
 
+        /// <summary>
+        /// Retrieves a paged list of customers with pagination metadata.
+        /// Maps domain models to DTOs and returns total count, page, and page size.
+        /// </summary>
+        /// <param name="page">Page number (1-based)</param>
+        /// <param name="pageSize">Number of customers per page</param>
+        /// <returns>Paged result containing customer DTOs and pagination info</returns>
+        public async Task<PagedResult<CustomerDto>> GetPagedAsync(int page, int pageSize)
+        {
+            var result = await _customerRepository.GetPagedAsync(page, pageSize);
+            return new PagedResult<CustomerDto>
+            {
+                Items = _mapper.Map<List<CustomerDto>>(result.Items),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize
+            };
+        }
+
     }
 }
