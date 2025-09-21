@@ -1,0 +1,56 @@
+﻿@using CrmApp.Client.Services
+
+@inject ToastService ToastService
+
+@if (visible)
+{
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div class="toast show align-items-center @GetCssClass()" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">@message</div>
+                <button type="button" class="btn-close me-2 m-auto" @onclick="Hide" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool visible = false;
+    private string message = "";
+    private ToastLevel level;
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("Toast Initialized");
+        ToastService.OnShow += Show;
+        ToastService.OnHide += Hide;
+    }
+
+    private async Task Show(string msg, ToastLevel toastLevel)
+    {
+        await InvokeAsync(() =>
+        {
+            message = msg;
+            level = toastLevel;
+            visible = true;
+            StateHasChanged();
+        });
+    }
+
+    private async Task Hide()
+    {
+        await InvokeAsync(() =>
+        {
+            visible = false;
+            StateHasChanged();
+        });
+    }
+
+    private string GetCssClass() => level switch
+    {
+        ToastLevel.Success => "text-bg-success border-0",
+        ToastLevel.Error => "text-bg-danger border-0",
+        ToastLevel.Info => "text-bg-info border-0",
+        _ => "text-bg-secondary border-0"
+    };
+}

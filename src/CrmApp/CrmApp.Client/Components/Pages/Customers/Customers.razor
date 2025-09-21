@@ -1,0 +1,189 @@
+﻿@page "/customers"
+@rendermode InteractiveServer
+@using CrmApp.Client.Services
+@using CrmApp.Shared.DTO
+@inject CustomerApiClient Api
+@inject NavigationManager Nav
+@inject ToastService ToastService
+
+<h3>Customers</h3>
+
+<button class="btn btn-primary mb-3" @onclick="CreateNew">+ Create New</button>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (customers is null || customers.Count == 0)
+{
+    <p>No customers found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>First</th>
+                <th>Last</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in customers)
+            {
+                <tr>
+                    <td>@c.Id</td>
+                    <td>@c.FirstName</td>
+                    <td>@c.LastName</td>
+                    <td>@c.Email</td>
+                    <td>
+                        <button class="btn btn-info btn-sm me-2" @onclick="() => ViewCustomer(c.Id)">View</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)">Previous</button>
+            </li>
+
+            @for (int i = 1; i <= TotalPages; i++)
+            {
+                <li class="page-item @(currentPage == i ? "active" : "")">
+                    <button class="page-link" @onclick="() => ChangePage(i)">@i</button>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == TotalPages ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)">Next</button>
+            </li>
+        </ul>
+    </nav>
+}
+
+@if (showConfirm && customerToDelete is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CancelDelete" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete customer:
+                    <strong>@customerToDelete.FirstName @customerToDelete.LastName</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteCustomer" disabled="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span>
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Deleting...
+                            </span>
+                        }
+                        else
+                        {
+                            <span>Delete</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<CustomerDto> customers = new();
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalCustomers = 0;
+
+    private int TotalPages => (int)Math.Ceiling((double)totalCustomers / pageSize);
+
+
+    private CustomerDto? customerToDelete;
+    private bool showConfirm = false;
+    private bool isLoading = true;
+    private bool isDeleting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
+    {
+        isLoading = true;
+        try
+        {
+            var result = await Api.GetCustomersPagedAsync(currentPage, pageSize);
+            customers = result.Items;
+            totalCustomers = result.TotalCount;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ChangePage(int newPage)
+    {
+        if (newPage >= 1 && newPage <= TotalPages)
+        {
+            currentPage = newPage;
+            await LoadCustomers();
+        }
+    }
+
+    private void CreateNew() => Nav.NavigateTo("/customers/create");
+
+    private void ViewCustomer(int id) => Nav.NavigateTo($"/customers/{id}");
+
+    private void ConfirmDelete(CustomerDto customer)
+    {
+        customerToDelete = customer;
+        showConfirm = true;
+    }
+
+    private void CancelDelete()
+    {
+        customerToDelete = null;
+        showConfirm = false;
+        isDeleting = false;
+    }
+
+    private async Task DeleteCustomer()
+    {
+        if (customerToDelete is not null)
+        {
+            isDeleting = true;
+            var response = await Api.DeleteCustomerAsync(customerToDelete.Id);
+            if (response == null)
+            {
+                ToastService.ShowSuccess("Customer deleted successfully.");
+                await LoadCustomers();
+            }
+            else
+            {
+               ToastService.ShowError("Delete failed.");
+            }
+            isDeleting = false;
+        }
+
+        showConfirm = false;
+        customerToDelete = null;
+    }
+}

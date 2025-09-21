@@ -1,0 +1,43 @@
+﻿@page "/customers/{id:int}"
+@rendermode InteractiveServer
+@using CrmApp.Client.Services
+@using CrmApp.Shared.DTO
+@inject CustomerApiClient Api
+@inject NavigationManager Nav
+
+<h3>Customer Details</h3>
+
+@if (customer == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card p-3">
+        <p><strong>Id:</strong> @customer.Id</p>
+        <p><strong>Name:</strong> @customer.FirstName @customer.LastName</p>
+        <p><strong>Email:</strong> @customer.Email</p>
+        <p><strong>Phone:</strong> @customer.PhoneNumber</p>
+        <p><strong>Address:</strong> @customer.Address, @customer.City, @customer.State, @customer.Country</p>
+        <p><strong>Created:</strong> @customer.CreatedDate</p>
+    </div>
+
+    <div class="mt-2">
+        <button class="btn btn-secondary" @onclick="BackToList">Back</button>
+        <button class="btn btn-primary" @onclick="() => EditCustomer(customer.Id)">Edit</button>
+    </div>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private CustomerDto? customer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customer = await Api.GetCustomerAsync(id);
+    }
+
+    private void BackToList() => Nav.NavigateTo("/customers");
+
+    private void EditCustomer(int id) => Nav.NavigateTo($"/customers/edit/{id}");
+}

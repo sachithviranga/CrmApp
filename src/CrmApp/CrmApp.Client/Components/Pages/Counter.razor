@@ -1,5 +1,7 @@
 ﻿@page "/counter"
+@using CrmApp.Client.Services
 @rendermode InteractiveServer
+@inject ToastService ToastService
 
 <PageTitle>Counter</PageTitle>
 
@@ -9,11 +11,21 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+<button class="btn btn-success" @onclick="Show">
+    Show Toast
+</button>
+
 @code {
     private int currentCount = 0;
 
     private void IncrementCount()
     {
+        ToastService.ShowSuccess("Customer added successfully.");
         currentCount++;
+    }
+
+    private void Show()
+    {
+        ToastService.ShowSuccess(" Saved successfully!");
     }
 }

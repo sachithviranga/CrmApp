@@ -50,5 +50,13 @@ namespace CrmApp.Application.Interfaces
         /// <returns>True if email exists, false otherwise</returns>
         Task<bool> ExistsByEmailAsync(string email, int? id);
 
+
+        /// <summary>
+        /// Retrieves a paged list of customers from the database
+        /// </summary>
+        /// <param name="page">Page number (1-based)</param>
+        /// <param name="pageSize">Number of customers per page</param>
+        /// <returns>Paged result containing customers and pagination info</returns>
+        Task<PagedResult<Customer>> GetPagedAsync(int page, int pageSize);
     }
 }
