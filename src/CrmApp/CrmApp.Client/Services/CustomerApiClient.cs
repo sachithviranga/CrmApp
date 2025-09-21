@@ -38,7 +38,7 @@ namespace CrmApp.Client.Services
 
         public async Task<ErrorResponse?> DeleteCustomerAsync(int id)
         {
-            var resp = await _http.DeleteAsync($"api/customer/{id}");
+            var resp = await _http.DeleteAsync($"api/v1/customer/{id}");
             if (resp.IsSuccessStatusCode) return null;
             return await resp.Content.ReadFromJsonAsync<ErrorResponse>();
         }

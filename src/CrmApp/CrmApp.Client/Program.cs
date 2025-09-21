@@ -15,6 +15,9 @@ builder.Services.AddHttpClient<CustomerApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl);
 });
 
+
+builder.Services.AddScoped<ToastService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

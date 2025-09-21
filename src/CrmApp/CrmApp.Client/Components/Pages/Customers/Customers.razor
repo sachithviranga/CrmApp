@@ -4,16 +4,19 @@
 @using CrmApp.Shared.DTO
 @inject CustomerApiClient Api
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <h3>Customers</h3>
 
 <button class="btn btn-primary mb-3" @onclick="CreateNew">+ Create New</button>
 
-<button class="btn btn-primary mb-3" @onclick="Counter">counter</button>
-
-@if (customers == null)
+@if (isLoading)
 {
     <p><em>Loading...</em></p>
+}
+else if (customers is null || customers.Count == 0)
+{
+    <p>No customers found.</p>
 }
 else
 {
@@ -36,7 +39,8 @@ else
                     <td>@c.LastName</td>
                     <td>@c.Email</td>
                     <td>
-                        <button class="btn btn-info btn-sm" @onclick="() => ViewCustomer(c.Id)">View</button>
+                        <button class="btn btn-info btn-sm me-2" @onclick="() => ViewCustomer(c.Id)">View</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c)">Delete</button>
                     </td>
                 </tr>
             }
@@ -44,26 +48,102 @@ else
     </table>
 }
 
+@if (showConfirm && customerToDelete is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CancelDelete" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete customer:
+                    <strong>@customerToDelete.FirstName @customerToDelete.LastName</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteCustomer" disabled="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span>
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Deleting...
+                            </span>
+                        }
+                        else
+                        {
+                            <span>Delete</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<CustomerDto>? customers;
+    private CustomerDto? customerToDelete;
+    private bool showConfirm = false;
+    private bool isLoading = true;
+    private bool isDeleting = false;
 
     protected override async Task OnInitializedAsync()
     {
-        customers = await Api.GetCustomersAsync();
+        await LoadCustomers();
     }
 
-    private void Counter()
+    private async Task LoadCustomers()
     {
-        Nav.NavigateTo("/counter");
+        isLoading = true;
+        try
+        {
+            customers = await Api.GetCustomersAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-    private void CreateNew()
+    private void CreateNew() => Nav.NavigateTo("/customers/create");
+
+    private void ViewCustomer(int id) => Nav.NavigateTo($"/customers/{id}");
+
+    private void ConfirmDelete(CustomerDto customer)
     {
-        Nav.NavigateTo("/customers/create");
+        customerToDelete = customer;
+        showConfirm = true;
     }
 
-    private void ViewCustomer(int id)
+    private void CancelDelete()
     {
-        Nav.NavigateTo($"/customers/{id}");
+        customerToDelete = null;
+        showConfirm = false;
+        isDeleting = false;
+    }
+
+    private async Task DeleteCustomer()
+    {
+        if (customerToDelete is not null)
+        {
+            isDeleting = true;
+            var response = await Api.DeleteCustomerAsync(customerToDelete.Id);
+            if (response == null)
+            {
+                ToastService.ShowSuccess("Customer deleted successfully.");
+                await LoadCustomers();
+            }
+            else
+            {
+                ToastService.ShowError("Delete failed.");
+            }
+            isDeleting = false;
+        }
+
+        showConfirm = false;
+        customerToDelete = null;
     }
 }

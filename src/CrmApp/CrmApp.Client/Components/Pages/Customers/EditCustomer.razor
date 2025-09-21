@@ -34,7 +34,7 @@ else
 
         <div class="mb-2">
             <label>Phone</label>
-            <InputText @bind-Value="customer.PhoneNumber" class="form-control" />
+            <InputText @bind-Value="customer.PhoneNumber" class="form-control" @oninput="FilterNumericOnly" inputmode="numeric" />
         </div>
 
         <div class="mb-2">
@@ -75,7 +75,7 @@ else
 @code {
     [Parameter] public int id { get; set; }
     private UpdateCustomerRequest? customer;
-    private List<string> errors = new();
+    private readonly List<string> errors = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,6 +112,16 @@ else
         else
         {
             errors.AddRange(err.Errors);
+        }
+    }
+
+    private void FilterNumericOnly(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString() ?? string.Empty;
+        var filtered = new string(input.Where(char.IsDigit).ToArray());
+        if (customer != null && filtered != customer?.PhoneNumber)
+        {
+            customer.PhoneNumber = filtered;
         }
     }
 
