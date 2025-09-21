@@ -81,7 +81,7 @@ namespace CrmApp.Server.Controllers
         /// <response code="200">Customer updated successfully</response>
         /// <response code="400">Invalid request data or business rule violation</response>
         /// <response code="404">Customer not found</response>
-        [HttpPut("{id}")]
+        [HttpPut]
         public async Task<ActionResult<CustomerDto>> UpdateCustomer([FromBody] UpdateCustomerRequest request)
         {
             // Delegate to service layer for business logic and validation
