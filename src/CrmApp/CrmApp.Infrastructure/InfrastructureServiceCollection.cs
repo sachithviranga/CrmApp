@@ -29,7 +29,6 @@ namespace CrmApp.Infrastructure
 
             #region Repositories
 
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
 
             #endregion
