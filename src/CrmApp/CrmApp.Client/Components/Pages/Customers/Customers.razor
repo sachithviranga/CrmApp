@@ -23,9 +23,9 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>First</th>
-                <th>Last</th>
+                <th>Account Id</th>
+                <th>First Name</th>
+                <th>Last Name</th>
                 <th>Email</th>
                 <th>Actions</th>
             </tr>
@@ -73,7 +73,7 @@ else
 @code {
     private List<CustomerDto> customers = new();
     private int currentPage = 1;
-    private readonly int pageSize = 10;
+    private readonly int pageSize = 8;
     private int totalCustomers = 0;
 
     private int TotalPages => (int)Math.Ceiling((double)totalCustomers / pageSize);
