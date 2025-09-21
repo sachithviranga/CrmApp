@@ -1,10 +1,19 @@
-using CrmApp.Client.Components;
+﻿using CrmApp.Client.Components;
+using CrmApp.Client.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"]
+                 ?? throw new InvalidOperationException("ApiBaseUrl is missing in appsettings.json");
+
+builder.Services.AddHttpClient<CustomerApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
 
 var app = builder.Build();
 
@@ -24,4 +33,5 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.Run();
+
+await app.RunAsync();

@@ -1,0 +1,119 @@
+﻿@page "/customers/edit/{id:int}"
+@rendermode InteractiveServer
+@using CrmApp.Client.Services
+@using CrmApp.Shared.DTO
+@inject CustomerApiClient Api
+@inject NavigationManager Nav
+
+<h3>Edit Customer</h3>
+
+@if (customer == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="customer" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-2">
+            <label>First Name</label>
+            <InputText @bind-Value="customer.FirstName" class="form-control" />
+        </div>
+
+        <div class="mb-2">
+            <label>Last Name</label>
+            <InputText @bind-Value="customer.LastName" class="form-control" />
+        </div>
+
+        <div class="mb-2">
+            <label>Email</label>
+            <InputText @bind-Value="customer.Email" class="form-control" />
+        </div>
+
+        <div class="mb-2">
+            <label>Phone</label>
+            <InputText @bind-Value="customer.PhoneNumber" class="form-control" />
+        </div>
+
+        <div class="mb-2">
+            <label>Address</label>
+            <InputText @bind-Value="customer.Address" class="form-control" />
+        </div>
+
+        <div class="mb-2">
+            <label>City</label>
+            <InputText @bind-Value="customer.City" class="form-control" />
+        </div>
+
+        <div class="mb-2">
+            <label>State</label>
+            <InputText @bind-Value="customer.State" class="form-control" />
+        </div>
+
+        <div class="mb-2">
+            <label>Country</label>
+            <InputText @bind-Value="customer.Country" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+
+    @if (errors.Any())
+    {
+        <ul class="text-danger mt-2">
+            @foreach (var e in errors)
+            {
+                <li>@e</li>
+            }
+        </ul>
+    }
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private UpdateCustomerRequest? customer;
+    private List<string> errors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resp = await Api.GetCustomerAsync(id);
+        if (resp != null)
+        {
+            // Map ResponseDto to RequestDto (so we can reuse validation)
+            customer = new UpdateCustomerRequest
+                {
+                    Id = resp.Id,
+                    FirstName = resp.FirstName,
+                    LastName = resp.LastName,
+                    Email = resp.Email,
+                    PhoneNumber = resp.PhoneNumber,
+                    Address = resp.Address,
+                    City = resp.City,
+                    State = resp.State,
+                    Country = resp.Country
+                };
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (customer == null) return;
+
+        errors.Clear();
+
+        var err = await Api.UpdateCustomerAsync(customer);
+        if (err == null)
+        {
+            Nav.NavigateTo($"/customers/{id}");
+        }
+        else
+        {
+            errors.AddRange(err.Errors);
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo($"/customers/{id}");
+}

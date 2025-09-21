@@ -1,0 +1,69 @@
+﻿@page "/customers"
+@rendermode InteractiveServer
+@using CrmApp.Client.Services
+@using CrmApp.Shared.DTO
+@inject CustomerApiClient Api
+@inject NavigationManager Nav
+
+<h3>Customers</h3>
+
+<button class="btn btn-primary mb-3" @onclick="CreateNew">+ Create New</button>
+
+<button class="btn btn-primary mb-3" @onclick="Counter">counter</button>
+
+@if (customers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>First</th>
+                <th>Last</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in customers)
+            {
+                <tr>
+                    <td>@c.Id</td>
+                    <td>@c.FirstName</td>
+                    <td>@c.LastName</td>
+                    <td>@c.Email</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" @onclick="() => ViewCustomer(c.Id)">View</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<CustomerDto>? customers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await Api.GetCustomersAsync();
+    }
+
+    private void Counter()
+    {
+        Nav.NavigateTo("/counter");
+    }
+
+    private void CreateNew()
+    {
+        Nav.NavigateTo("/customers/create");
+    }
+
+    private void ViewCustomer(int id)
+    {
+        Nav.NavigateTo($"/customers/{id}");
+    }
+}

@@ -1,0 +1,64 @@
+﻿@page "/customers/create"
+@using CrmApp.Shared.DTO
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Create Customer</h3>
+
+<EditForm Model="newCustomer" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>First Name</label>
+        <InputText @bind-Value="newCustomer.FirstName" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label>Last Name</label>
+        <InputText @bind-Value="newCustomer.LastName" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label>Email</label>
+        <InputText @bind-Value="newCustomer.Email" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@if (errors.Any())
+{
+    <ul class="text-danger">
+        @foreach (var e in errors)
+        {
+            <li>@e</li>
+        }
+    </ul>
+}
+
+@code {
+    private CreateCustomerRequest newCustomer = new();
+    private List<string> errors = new();
+
+    private async Task HandleValidSubmit()
+    {
+        errors.Clear();
+
+        var resp = await Http.PostAsJsonAsync("api/customers", newCustomer);
+        if (resp.IsSuccessStatusCode)
+        {
+            Nav.NavigateTo("/customers"); // back to list
+        }
+        else
+        {
+            var err = await resp.Content.ReadFromJsonAsync<ErrorResponse>();
+            if (err != null)
+                errors.AddRange(err.Errors);
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/customers");
+}
