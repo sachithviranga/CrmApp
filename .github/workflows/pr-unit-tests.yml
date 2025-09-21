@@ -18,10 +18,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore
-        run: dotnet restore src/CrmApp/CrmApp.Server/CrmApp.Server.Tests.csproj
+        run: dotnet restore src/CrmApp/CrmApp.Server.Tests/CrmApp.Server.Tests.csproj
 
       - name: Build
-        run: dotnet build src/CrmApp/CrmApp.Server/CrmApp.Server.Tests.csproj --no-restore --configuration Release
+        run: dotnet build src/CrmApp/CrmApp.Server.Tests/CrmApp.Server.Tests.csproj --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test src/CrmApp/CrmApp.Server/CrmApp.Server.Tests.csproj --no-build --configuration Release --logger "trx"
+        run: dotnet test src/CrmApp/CrmApp.Server.Tests/CrmApp.Server.Tests.csproj --no-build --configuration Release --logger "trx"
