@@ -27,21 +27,66 @@ else
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Email</th>
-                <th>Actions</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Country</th>
+                <th width="150px">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var c in customers)
             {
                 <tr>
-                    <td>@c.Id</td>
-                    <td>@c.FirstName</td>
-                    <td>@c.LastName</td>
-                    <td>@c.Email</td>
-                    <td>
-                        <button class="btn btn-info btn-sm me-2" @onclick="() => ViewCustomer(c.Id)">View</button>
-                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c)">Delete</button>
-                    </td>
+                    @if (editingId == c.Id)
+                    {
+                        <td>@c.Id</td>
+                        <td><input class="form-control" @bind="c.FirstName" /></td>
+                        <td><input class="form-control" @bind="c.LastName" /></td>
+                        <td><input class="form-control" @bind="c.Email" /></td>
+                        <td><input class="form-control" type="text" inputmode="numeric" @bind="c.PhoneNumber" /></td>
+                        <td><input class="form-control" @bind="c.Address" /></td>
+                        <td><input class="form-control" @bind="c.City" /></td>
+                        <td><input class="form-control" @bind="c.State" /></td>
+                        <td><input class="form-control" @bind="c.Country" /></td>
+                        <td >
+                            <button class="btn btn-success btn-sm me-2" @onclick="() => Save(c)" title="Save">
+                                <i class="bi bi-check-circle"></i>
+                                <span class="visually-hidden">Save</span>
+                            </button>
+                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit" title="Cancel">
+                                <i class="bi bi-x-circle"></i>
+                                <span class="visually-hidden">Cancel</span>
+                            </button>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>@c.Id</td>
+                        <td>@c.FirstName</td>
+                        <td>@c.LastName</td>
+                        <td>@c.Email</td>
+                        <td>@c.PhoneNumber</td>
+                        <td>@c.Address</td>
+                        <td>@c.City</td>
+                        <td>@c.State</td>
+                        <td>@c.Country</td>
+                        <td>
+                            <button class="btn btn-info btn-sm me-2" @onclick="() => ViewCustomer(c.Id)" title="View">
+                                <i class="bi bi-eye"></i>
+                                <span class="visually-hidden">View</span>
+                            </button>
+                            <button class="btn btn-warning btn-sm me-2" @onclick="() => EditCustomer(c.Id)" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                                <span class="visually-hidden">Edit</span>
+                            </button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c)" title="Delete">
+                                <i class="bi bi-trash"></i>
+                                <span class="visually-hidden">Delete</span>
+                            </button>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -53,32 +98,32 @@ else
     <nav>
         <ul class="pagination">
             <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)">Previous</button>
+                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)" disabled="@(currentPage == 1)">Previous</button>
             </li>
 
             @for (int i = 1; i <= TotalPages; i++)
             {
                 <li class="page-item @(currentPage == i ? "active" : "")">
-                    <button class="page-link" @onclick="() => ChangePage(i)">@i</button>
+                    <button class="page-link" @onclick="() => ChangePage(i)" disabled="@(currentPage == i)">@i</button>
                 </li>
             }
 
             <li class="page-item @(currentPage == TotalPages ? "disabled" : "")">
-                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)">Next</button>
+                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)" disabled="@(currentPage == TotalPages)">Next</button>
             </li>
         </ul>
     </nav>
 }
 
 @code {
-    private List<CustomerDto> customers = new();
+    private List<CustomerDto> customers = [];
     private int currentPage = 1;
     private readonly int pageSize = 8;
     private int totalCustomers = 0;
+    private int? editingId = null;
+    private bool isLoading = true;
 
     private int TotalPages => (int)Math.Ceiling((double)totalCustomers / pageSize);
-
-    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,24 +132,24 @@ else
 
     private async Task LoadCustomers()
     {
-
         isLoading = true;
+        StateHasChanged();
         try
         {
             var result = await Api.GetCustomersPagedAsync(currentPage, pageSize);
             customers = result.Items;
             totalCustomers = result.TotalCount;
-
         }
         finally
         {
             isLoading = false;
+            StateHasChanged();
         }
     }
 
     private async Task ChangePage(int newPage)
     {
-        if (newPage >= 1 && newPage <= TotalPages)
+        if (newPage >= 1 && newPage <= TotalPages && newPage != currentPage)
         {
             currentPage = newPage;
             await LoadCustomers();
@@ -115,6 +160,45 @@ else
 
     private void ViewCustomer(int id) => Nav.NavigateTo($"/customers/{id}");
 
+    private void EditCustomer(int id)
+    {
+        editingId = id;
+    }
+
+    private void CancelEdit()
+    {
+        editingId = null;
+    }
+
+    private async Task Save(CustomerDto editedCustomer)
+    {
+        editingId = null;
+
+        var customer = new UpdateCustomerRequest
+            {
+                Id = editedCustomer.Id,
+                FirstName = editedCustomer.FirstName,
+                LastName = editedCustomer.LastName,
+                Email = editedCustomer.Email,
+                PhoneNumber = editedCustomer.PhoneNumber,
+                Address = editedCustomer.Address,
+                City = editedCustomer.City,
+                State = editedCustomer.State,
+                Country = editedCustomer.Country
+            };
+
+        var err = await Api.UpdateCustomerAsync(customer);
+
+        if (err == null)
+        {
+            await JS.InvokeVoidAsync("showAlert", "success", "Success!", "Customer updated successfully.");
+            await LoadCustomers();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("showAlert", "error", "Something went wrong!", "Update failed.");
+        }
+    }
 
     private async Task ConfirmDelete(CustomerDto customer)
     {
@@ -129,7 +213,6 @@ else
         }
     }
 
-
     private async Task DeleteCustomer(CustomerDto customerToDelete)
     {
         if (customerToDelete is not null)
@@ -138,7 +221,6 @@ else
             if (response == null)
             {
                 await JS.InvokeVoidAsync("showAlert", "success", "Success!", "Customer deleted successfully.");
-
                 await LoadCustomers();
             }
             else

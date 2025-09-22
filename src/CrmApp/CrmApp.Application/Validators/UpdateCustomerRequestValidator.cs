@@ -22,18 +22,14 @@ namespace CrmApp.Application.Validators
                 .NotEmpty()
                 .WithMessage("First name is required")
                 .MaximumLength(50)
-                .WithMessage("First name cannot exceed 50 characters")
-                .Matches(@"^[a-zA-Z\s\-']+$")
-                .WithMessage("First name can only contain letters, spaces, hyphens, and apostrophes");
+                .WithMessage("First name cannot exceed 50 characters");
 
             // Last Name validation - required, not empty, reasonable length
             RuleFor(x => x.LastName)
                 .NotEmpty()
                 .WithMessage("Last name is required")
                 .MaximumLength(50)
-                .WithMessage("Last name cannot exceed 50 characters")
-                .Matches(@"^[a-zA-Z\s\-']+$")
-                .WithMessage("Last name can only contain letters, spaces, hyphens, and apostrophes");
+                .WithMessage("Last name cannot exceed 50 characters");
 
             // Email validation - required, valid format, reasonable length
             RuleFor(x => x.Email)
