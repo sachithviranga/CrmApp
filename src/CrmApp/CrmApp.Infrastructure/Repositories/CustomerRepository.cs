@@ -33,6 +33,16 @@ namespace CrmApp.Infrastructure.Repositories
             _mapper = mapper;
             _logger = logger;
         }
+        
+        private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+        {
+            // SQL Server unique constraint violation error numbers: 2601 and 2627
+            if (ex.InnerException is Microsoft.Data.SqlClient.SqlException sqlEx)
+            {
+                return sqlEx.Number == 2601 || sqlEx.Number == 2627;
+            }
+            return false;
+        }
 
         /// <summary>
         /// Creates a new customer in the database.
@@ -64,7 +74,14 @@ namespace CrmApp.Infrastructure.Repositories
 
             // Add entity to context and persist to database
             await _db.Customer.AddAsync(customerEntity);
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                throw new InvalidOperationException($"Customer with email {customer.Email} already exists.", ex);
+            }
 
             _logger.LogInformation("Customer created successfully with ID: {Id}", customerEntity.Id);
 
@@ -112,8 +129,7 @@ namespace CrmApp.Infrastructure.Repositories
             // Order results for consistent data presentation
             var entities = await _db.Customer
                 .AsNoTracking()
-                .OrderBy(c => c.LastName)
-                .ThenBy(c => c.FirstName)
+                .OrderByDescending(a=>a.Id)
                 .ToListAsync();
 
             // Map entities to domain models
@@ -190,7 +206,14 @@ namespace CrmApp.Infrastructure.Repositories
             entity.DateUpdated = DateTime.UtcNow;
 
             // Persist changes to database
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                throw new InvalidOperationException($"Customer with email {customer.Email} already exists.", ex);
+            }
 
             _logger.LogInformation("Customer with ID {Id} updated successfully", customer.Id);
 
@@ -242,7 +265,7 @@ namespace CrmApp.Infrastructure.Repositories
 
             // Retrieve paged items ordered by ID
             var items = await query
-                .OrderBy(c => c.Id)
+                .OrderByDescending(c => c.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ProjectTo<Customer>(_mapper.ConfigurationProvider)

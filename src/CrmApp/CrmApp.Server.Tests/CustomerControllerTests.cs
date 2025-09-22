@@ -82,9 +82,8 @@ namespace CrmApp.Server.Tests
             var result = await _controller.GetCustomer(id);
 
             // Assert
-            var actionResult = Assert.IsType<ActionResult<CustomerDto>>(result);
-            var value = Assert.IsType<CustomerDto>(actionResult.Value);
-
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var value = Assert.IsType<CustomerDto>(okResult.Value);
             Assert.Equal(customer, value);
             _mockService.Verify(s => s.GetCustomerByIdAsync(id), Times.Once);
         }

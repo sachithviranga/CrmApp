@@ -1,5 +1,9 @@
 ﻿namespace CrmApp.Shared.DTO
 {
+    /// <summary>
+    /// Customer data transfer object used for API responses and client consumption.
+    /// Contains denormalized fields like FullName and formatted date strings.
+    /// </summary>
     public class CustomerDto
     {
         public int Id { get; set; }
