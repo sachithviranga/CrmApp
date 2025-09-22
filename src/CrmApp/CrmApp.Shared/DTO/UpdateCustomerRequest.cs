@@ -7,33 +7,33 @@ namespace CrmApp.Shared.DTO
         [Required]
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(100, MinimumLength = 2)]
+        [Required(ErrorMessage = "First name is required.")]
+        [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters.")]
         public string FirstName { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100, MinimumLength = 2)]
+        [Required(ErrorMessage = "Last name is required.")]
+        [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters.")]
         public string LastName { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
-        [StringLength(255)]
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters.")]
         public string Email { get; set; } = string.Empty;
 
-        [Phone]
-        [StringLength(20)]
+        [Phone(ErrorMessage = "Invalid phone number.")]
+        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters.")]
         public string? PhoneNumber { get; set; }
 
-        [StringLength(255)]
+        [StringLength(200, ErrorMessage = "Address cannot exceed 200 characters.")]
         public string? Address { get; set; }
 
-        [StringLength(100)]
+        [StringLength(50, ErrorMessage = "City cannot exceed 50 characters.")]
         public string? City { get; set; }
 
-        [StringLength(100)]
+        [StringLength(50, ErrorMessage = "State cannot exceed 50 characters.")]
         public string? State { get; set; }
 
-        [StringLength(100)]
+        [StringLength(50, ErrorMessage = "Country cannot exceed 50 characters.")]
         public string? Country { get; set; }
     }
 }
