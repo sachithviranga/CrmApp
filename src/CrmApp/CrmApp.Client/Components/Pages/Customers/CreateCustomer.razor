@@ -15,41 +15,49 @@
     <div class="mb-2">
         <label for="firstName">First Name</label>
         <InputText id="firstName" @bind-Value="newCustomer.FirstName" class="form-control" />
+        <ValidationMessage For="@(() => newCustomer.FirstName)" />
     </div>
 
     <div class="mb-2">
         <label for="lastName">Last Name</label>
         <InputText id="lastName" @bind-Value="newCustomer.LastName" class="form-control" />
+        <ValidationMessage For="@(() => newCustomer.LastName)" />
     </div>
 
     <div class="mb-2">
         <label for="email">Email</label>
         <InputText id="email" @bind-Value="newCustomer.Email" class="form-control" />
+        <ValidationMessage For="@(() => newCustomer.Email)" />
     </div>
 
     <div class="mb-2">
         <label for="phone">Phone</label>
         <InputText id="phone" @bind-Value="newCustomer.PhoneNumber" class="form-control" @oninput="FilterNumericOnly" inputmode="numeric" />
+        <ValidationMessage For="@(() => newCustomer.PhoneNumber)" />
     </div>
 
     <div class="mb-2">
         <label for="address">Address</label>
         <InputText id="address" @bind-Value="newCustomer.Address" class="form-control" />
+        <ValidationMessage For="@(() => newCustomer.Address)" />
     </div>
 
     <div class="mb-2">
         <label for="city">City</label>
         <InputText id="city" @bind-Value="newCustomer.City" class="form-control" />
+        <ValidationMessage For="@(() => newCustomer.City)" />
     </div>
 
     <div class="mb-2">
         <label for="state">State</label>
         <InputText id="state" @bind-Value="newCustomer.State" class="form-control" />
+        <ValidationMessage For="@(() => newCustomer.State)" />
     </div>
 
     <div class="mb-2">
         <label for="country">Country</label>
         <InputText id="country" @bind-Value="newCustomer.Country" class="form-control" />
+        <ValidationMessage For="@(() => newCustomer.Country)" />
     </div>
 
     <div class="mt-3">

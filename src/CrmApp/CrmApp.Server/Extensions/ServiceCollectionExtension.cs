@@ -1,6 +1,5 @@
 ﻿using CrmApp.Application;
 using CrmApp.Infrastructure;
-using FluentValidation.AspNetCore;
 
 namespace CrmApp.Server.Extensions
 {
@@ -8,8 +7,6 @@ namespace CrmApp.Server.Extensions
     {
         public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
-
-            services.AddFluentValidationAutoValidation();
 
             InfrastructureServiceCollection.RegisterServices(services, configuration);
 

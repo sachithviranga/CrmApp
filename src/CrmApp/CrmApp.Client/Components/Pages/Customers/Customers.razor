@@ -1,10 +1,10 @@
-﻿@page "/customers"
-@rendermode InteractiveServer
-@using CrmApp.Client.Services
-@using CrmApp.Shared.DTO
-@inject CustomerApiClient Api
-@inject NavigationManager Nav
-@inject IJSRuntime JS
+﻿        @page "/customers"
+        @rendermode InteractiveServer
+        @using CrmApp.Client.Services
+        @using CrmApp.Shared.DTO
+        @inject CustomerApiClient Api
+        @inject NavigationManager Nav
+        @inject IJSRuntime JS
 
 <h3>Customers</h3>
 
@@ -39,26 +39,56 @@ else
             @foreach (var c in customers)
             {
                 <tr>
-                    @if (editingId == c.Id)
+                    @if (editingId == c.Id && editModel is not null)
                     {
-                        <td>@c.Id</td>
-                        <td><input class="form-control" @bind="c.FirstName" /></td>
-                        <td><input class="form-control" @bind="c.LastName" /></td>
-                        <td><input class="form-control" @bind="c.Email" /></td>
-                        <td><input class="form-control" type="text" inputmode="numeric" @bind="c.PhoneNumber" /></td>
-                        <td><input class="form-control" @bind="c.Address" /></td>
-                        <td><input class="form-control" @bind="c.City" /></td>
-                        <td><input class="form-control" @bind="c.State" /></td>
-                        <td><input class="form-control" @bind="c.Country" /></td>
-                        <td >
-                            <button class="btn btn-success btn-sm me-2" @onclick="() => Save(c)" title="Save">
-                                <i class="bi bi-check-circle"></i>
-                                <span class="visually-hidden">Save</span>
-                            </button>
-                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit" title="Cancel">
-                                <i class="bi bi-x-circle"></i>
-                                <span class="visually-hidden">Cancel</span>
-                            </button>
+                        <td>@editModel.Id</td>
+                        <td colspan="9">
+                            <EditForm Model="editModel" OnValidSubmit="HandleValidSubmit">
+                                <DataAnnotationsValidator />
+                                <div class="row g-2">
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.FirstName" placeholder="First Name" />
+                                        <ValidationMessage For="@(() => editModel.FirstName)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.LastName" placeholder="Last Name" />
+                                        <ValidationMessage For="@(() => editModel.LastName)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.Email" placeholder="Email" />
+                                        <ValidationMessage For="@(() => editModel.Email)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.PhoneNumber" />
+                                        <ValidationMessage For="@(() => editModel.PhoneNumber)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.Address" />
+                                        <ValidationMessage For="@(() => editModel.Address)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.City" />
+                                        <ValidationMessage For="@(() => editModel.City)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.State" />
+                                        <ValidationMessage For="@(() => editModel.State)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.Country" />
+                                        <ValidationMessage For="@(() => editModel.Country)" />
+                                    </div>
+
+                                    <div class="col-auto">
+                                        <button type="submit" class="btn btn-success btn-sm me-2">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" @onclick="CancelEdit">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </EditForm>
                         </td>
                     }
                     else
@@ -73,17 +103,14 @@ else
                         <td>@c.State</td>
                         <td>@c.Country</td>
                         <td>
-                            <button class="btn btn-info btn-sm me-2" @onclick="() => ViewCustomer(c.Id)" title="View">
+                            <button class="btn btn-info btn-sm me-2" @onclick="() => ViewCustomer(c.Id)">
                                 <i class="bi bi-eye"></i>
-                                <span class="visually-hidden">View</span>
                             </button>
-                            <button class="btn btn-warning btn-sm me-2" @onclick="() => EditCustomer(c.Id)" title="Edit">
+                            <button class="btn btn-warning btn-sm me-2" @onclick="() => EditCustomer(c)">
                                 <i class="bi bi-pencil"></i>
-                                <span class="visually-hidden">Edit</span>
                             </button>
-                            <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c)" title="Delete">
+                            <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c)">
                                 <i class="bi bi-trash"></i>
-                                <span class="visually-hidden">Delete</span>
                             </button>
                         </td>
                     }
@@ -121,6 +148,7 @@ else
     private readonly int pageSize = 8;
     private int totalCustomers = 0;
     private int? editingId = null;
+    private UpdateCustomerRequest? editModel;
     private bool isLoading = true;
 
     private int TotalPages => (int)Math.Ceiling((double)totalCustomers / pageSize);
@@ -160,38 +188,40 @@ else
 
     private void ViewCustomer(int id) => Nav.NavigateTo($"/customers/{id}");
 
-    private void EditCustomer(int id)
+    private void EditCustomer(CustomerDto customer)
     {
-        editingId = id;
+        editingId = customer.Id;
+        editModel = new UpdateCustomerRequest
+            {
+                Id = customer.Id,
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber,
+                Address = customer.Address,
+                City = customer.City,
+                State = customer.State,
+                Country = customer.Country
+            };
     }
 
     private void CancelEdit()
     {
         editingId = null;
+        editModel = null;
     }
 
-    private async Task Save(CustomerDto editedCustomer)
+    private async Task HandleValidSubmit()
     {
-        editingId = null;
+        if (editModel is null) return;
 
-        var customer = new UpdateCustomerRequest
-            {
-                Id = editedCustomer.Id,
-                FirstName = editedCustomer.FirstName,
-                LastName = editedCustomer.LastName,
-                Email = editedCustomer.Email,
-                PhoneNumber = editedCustomer.PhoneNumber,
-                Address = editedCustomer.Address,
-                City = editedCustomer.City,
-                State = editedCustomer.State,
-                Country = editedCustomer.Country
-            };
-
-        var err = await Api.UpdateCustomerAsync(customer);
+        var err = await Api.UpdateCustomerAsync(editModel);
 
         if (err == null)
         {
             await JS.InvokeVoidAsync("showAlert", "success", "Success!", "Customer updated successfully.");
+            editingId = null;
+            editModel = null;
             await LoadCustomers();
         }
         else
