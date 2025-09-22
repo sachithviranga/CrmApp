@@ -1,10 +1,10 @@
-﻿@page "/customers"
-@rendermode InteractiveServer
-@using CrmApp.Client.Services
-@using CrmApp.Shared.DTO
-@inject CustomerApiClient Api
-@inject NavigationManager Nav
-@inject IJSRuntime JS
+﻿        @page "/customers"
+        @rendermode InteractiveServer
+        @using CrmApp.Client.Services
+        @using CrmApp.Shared.DTO
+        @inject CustomerApiClient Api
+        @inject NavigationManager Nav
+        @inject IJSRuntime JS
 
 <h3>Customers</h3>
 
@@ -27,21 +27,93 @@ else
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Email</th>
-                <th>Actions</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Country</th>
+                <th width="150px">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var c in customers)
             {
                 <tr>
-                    <td>@c.Id</td>
-                    <td>@c.FirstName</td>
-                    <td>@c.LastName</td>
-                    <td>@c.Email</td>
-                    <td>
-                        <button class="btn btn-info btn-sm me-2" @onclick="() => ViewCustomer(c.Id)">View</button>
-                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c)">Delete</button>
-                    </td>
+                    @if (editingId == c.Id && editModel is not null)
+                    {
+                        <td>@editModel.Id</td>
+                        <td colspan="9">
+                            <EditForm Model="editModel" OnValidSubmit="HandleValidSubmit">
+                                <DataAnnotationsValidator />
+                                <div class="row g-2">
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.FirstName" placeholder="First Name" />
+                                        <ValidationMessage For="@(() => editModel.FirstName)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.LastName" placeholder="Last Name" />
+                                        <ValidationMessage For="@(() => editModel.LastName)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.Email" placeholder="Email" />
+                                        <ValidationMessage For="@(() => editModel.Email)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.PhoneNumber" />
+                                        <ValidationMessage For="@(() => editModel.PhoneNumber)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.Address" />
+                                        <ValidationMessage For="@(() => editModel.Address)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.City" />
+                                        <ValidationMessage For="@(() => editModel.City)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.State" />
+                                        <ValidationMessage For="@(() => editModel.State)" />
+                                    </div>
+                                    <div class="col">
+                                        <InputText class="form-control" @bind-Value="editModel.Country" />
+                                        <ValidationMessage For="@(() => editModel.Country)" />
+                                    </div>
+
+                                    <div class="col-auto">
+                                        <button type="submit" class="btn btn-success btn-sm me-2">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" @onclick="CancelEdit">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>@c.Id</td>
+                        <td>@c.FirstName</td>
+                        <td>@c.LastName</td>
+                        <td>@c.Email</td>
+                        <td>@c.PhoneNumber</td>
+                        <td>@c.Address</td>
+                        <td>@c.City</td>
+                        <td>@c.State</td>
+                        <td>@c.Country</td>
+                        <td>
+                            <button class="btn btn-info btn-sm me-2" @onclick="() => ViewCustomer(c.Id)">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-warning btn-sm me-2" @onclick="() => EditCustomer(c)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -53,32 +125,33 @@ else
     <nav>
         <ul class="pagination">
             <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)">Previous</button>
+                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)" disabled="@(currentPage == 1)">Previous</button>
             </li>
 
             @for (int i = 1; i <= TotalPages; i++)
             {
                 <li class="page-item @(currentPage == i ? "active" : "")">
-                    <button class="page-link" @onclick="() => ChangePage(i)">@i</button>
+                    <button class="page-link" @onclick="() => ChangePage(i)" disabled="@(currentPage == i)">@i</button>
                 </li>
             }
 
             <li class="page-item @(currentPage == TotalPages ? "disabled" : "")">
-                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)">Next</button>
+                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)" disabled="@(currentPage == TotalPages)">Next</button>
             </li>
         </ul>
     </nav>
 }
 
 @code {
-    private List<CustomerDto> customers = new();
+    private List<CustomerDto> customers = [];
     private int currentPage = 1;
     private readonly int pageSize = 8;
     private int totalCustomers = 0;
+    private int? editingId = null;
+    private UpdateCustomerRequest? editModel;
+    private bool isLoading = true;
 
     private int TotalPages => (int)Math.Ceiling((double)totalCustomers / pageSize);
-
-    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,24 +160,24 @@ else
 
     private async Task LoadCustomers()
     {
-
         isLoading = true;
+        StateHasChanged();
         try
         {
             var result = await Api.GetCustomersPagedAsync(currentPage, pageSize);
             customers = result.Items;
             totalCustomers = result.TotalCount;
-
         }
         finally
         {
             isLoading = false;
+            StateHasChanged();
         }
     }
 
     private async Task ChangePage(int newPage)
     {
-        if (newPage >= 1 && newPage <= TotalPages)
+        if (newPage >= 1 && newPage <= TotalPages && newPage != currentPage)
         {
             currentPage = newPage;
             await LoadCustomers();
@@ -115,6 +188,47 @@ else
 
     private void ViewCustomer(int id) => Nav.NavigateTo($"/customers/{id}");
 
+    private void EditCustomer(CustomerDto customer)
+    {
+        editingId = customer.Id;
+        editModel = new UpdateCustomerRequest
+            {
+                Id = customer.Id,
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber,
+                Address = customer.Address,
+                City = customer.City,
+                State = customer.State,
+                Country = customer.Country
+            };
+    }
+
+    private void CancelEdit()
+    {
+        editingId = null;
+        editModel = null;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (editModel is null) return;
+
+        var err = await Api.UpdateCustomerAsync(editModel);
+
+        if (err == null)
+        {
+            await JS.InvokeVoidAsync("showAlert", "success", "Success!", "Customer updated successfully.");
+            editingId = null;
+            editModel = null;
+            await LoadCustomers();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("showAlert", "error", "Something went wrong!", "Update failed.");
+        }
+    }
 
     private async Task ConfirmDelete(CustomerDto customer)
     {
@@ -129,7 +243,6 @@ else
         }
     }
 
-
     private async Task DeleteCustomer(CustomerDto customerToDelete)
     {
         if (customerToDelete is not null)
@@ -138,7 +251,6 @@ else
             if (response == null)
             {
                 await JS.InvokeVoidAsync("showAlert", "success", "Success!", "Customer deleted successfully.");
-
                 await LoadCustomers();
             }
             else

@@ -21,41 +21,49 @@ else
         <div class="mb-2">
             <label>First Name</label>
             <InputText @bind-Value="customer.FirstName" class="form-control" />
+            <ValidationMessage For="@(() => customer.FirstName)" />
         </div>
 
         <div class="mb-2">
             <label>Last Name</label>
             <InputText @bind-Value="customer.LastName" class="form-control" />
+            <ValidationMessage For="@(() => customer.LastName)" />
         </div>
 
         <div class="mb-2">
             <label>Email</label>
             <InputText @bind-Value="customer.Email" class="form-control" />
+            <ValidationMessage For="@(() => customer.Email)" />
         </div>
 
         <div class="mb-2">
             <label>Phone</label>
             <InputText @bind-Value="customer.PhoneNumber" class="form-control" @oninput="FilterNumericOnly" inputmode="numeric" />
+            <ValidationMessage For="@(() => customer.PhoneNumber)" />
         </div>
 
         <div class="mb-2">
             <label>Address</label>
             <InputText @bind-Value="customer.Address" class="form-control" />
+            <ValidationMessage For="@(() => customer.Address)" />
         </div>
 
         <div class="mb-2">
             <label>City</label>
             <InputText @bind-Value="customer.City" class="form-control" />
+            <ValidationMessage For="@(() => customer.City)" />
         </div>
 
         <div class="mb-2">
             <label>State</label>
             <InputText @bind-Value="customer.State" class="form-control" />
+            <ValidationMessage For="@(() => customer.State)" />
         </div>
 
         <div class="mb-2">
             <label>Country</label>
             <InputText @bind-Value="customer.Country" class="form-control" />
+            <ValidationMessage For="@(() => customer.Country)" />
         </div>
 
         <button type="submit" class="btn btn-success">Save</button>

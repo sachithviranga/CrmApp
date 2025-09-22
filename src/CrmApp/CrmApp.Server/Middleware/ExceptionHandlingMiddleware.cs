@@ -1,6 +1,5 @@
 ﻿using CrmApp.Domain.Exceptions;
 using CrmApp.Shared.DTO;
-using FluentValidation;
 using System.Net;
 
 namespace CrmApp.Server.Middleware
@@ -21,18 +20,6 @@ namespace CrmApp.Server.Middleware
             try
             {
                 await _next(context); // continue pipeline
-            }
-            catch (ValidationException ex) // FluentValidation failures
-            {
-                _logger.LogWarning(ex, "Validation error");
-
-                var response = new ErrorResponse
-                {
-                    Type = "ValidationError",
-                    Errors = ex.Errors.Select(e => e.ErrorMessage).ToList()
-                };
-
-                await WriteResponseAsync(context, HttpStatusCode.BadRequest, response);
             }
             catch (DuplicateEmailException ex) // Domain business rule
             {

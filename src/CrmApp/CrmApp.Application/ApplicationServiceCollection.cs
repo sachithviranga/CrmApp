@@ -1,8 +1,6 @@
 ﻿using CrmApp.Application.Interfaces;
 using CrmApp.Application.Mapping;
 using CrmApp.Application.Services;
-using CrmApp.Application.Validators;
-using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,13 +19,6 @@ namespace CrmApp.Application
             #region Services
 
             services.AddScoped<ICustomerService, CustomerService>();
-
-            #endregion
-
-            #region Validators
-
-            services.AddValidatorsFromAssemblyContaining<CreateCustomerRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<UpdateCustomerRequestValidator>();
 
             #endregion
 
