@@ -53,8 +53,8 @@ namespace CrmApp.Server.Controllers
             
             if (customer == null)
                 return NotFound();
-                
-            return customer;
+
+            return Ok(customer);
         }
 
         /// <summary>
