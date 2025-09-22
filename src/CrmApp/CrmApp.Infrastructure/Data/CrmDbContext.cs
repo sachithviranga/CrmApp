@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CrmApp.Infrastructure.Data
 {
+    /// <summary>
+    /// Entity Framework Core database context for the CRM application.
+    /// Exposes DbSets and configures entity mappings and constraints.
+    /// </summary>
     public class CrmDbContext : DbContext
     {
         public CrmDbContext(DbContextOptions<CrmDbContext> options) : base(options) { }

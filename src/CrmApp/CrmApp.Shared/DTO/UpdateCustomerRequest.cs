@@ -2,6 +2,10 @@
 
 namespace CrmApp.Shared.DTO
 {
+    /// <summary>
+    /// Request payload for updating an existing customer.
+    /// Carries the target customer identifier and new values with validation.
+    /// </summary>
     public class UpdateCustomerRequest
     {
         [Required]

@@ -2,6 +2,10 @@
 
 namespace CrmApp.Shared.DTO
 {
+    /// <summary>
+    /// Request payload for creating a new customer.
+    /// Includes basic validation attributes for server-side model binding.
+    /// </summary>
     public class CreateCustomerRequest
     {
         [Required(ErrorMessage = "First name is required.")]
